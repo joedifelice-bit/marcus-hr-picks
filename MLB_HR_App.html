@@ -485,6 +485,33 @@
     font-size: 11px; color: var(--text-dim); line-height: 1.4;
   }
 
+  /* Weather row (model v2.1) */
+  .weather-row {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    padding: 8px 12px;
+    background: rgba(0,0,0,0.18);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    font-size: 12px;
+    color: var(--text-2);
+  }
+  .weather-row .wkv { display: inline-flex; align-items: center; gap: 4px; }
+  .weather-row .wkv strong { color: var(--text); font-weight: 700; }
+  .weather-row .roof-pill {
+    padding: 1px 7px; border-radius: 999px; font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
+    background: rgba(255,255,255,0.06); color: var(--text-2);
+  }
+  .weather-row .roof-pill.open { background: rgba(245,158,11,0.18); color: var(--yellow); }
+  .weather-row .roof-pill.closed { background: rgba(79,158,255,0.16); color: var(--accent-2); }
+  .weather-row .wf-badge {
+    margin-left: auto;
+    padding: 2px 8px; border-radius: 6px;
+    font-size: 11px; font-weight: 700;
+    background: rgba(255,255,255,0.06);
+  }
+  .weather-row .wf-badge.boost { background: rgba(16,185,129,0.18); color: var(--green); }
+  .weather-row .wf-badge.suppress { background: rgba(239,68,68,0.18); color: #ff7878; }
+
   /* Per-pick unit recommendation */
   .units-row {
     display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
@@ -2080,6 +2107,24 @@ function populateSources() {
   });
 }
 
+function renderWeatherRow(p) {
+  const w = p.weather;
+  if (!w) return '';
+  const roof = (p.roof_status || 'unknown').toLowerCase();
+  const wf = p.weather_factor || 1.00;
+  const wfClass = wf > 1.02 ? 'boost' : wf < 0.98 ? 'suppress' : '';
+  const wfDisplay = `×${wf.toFixed(2)}`;
+  const windLabel = p.weather_summary ? p.weather_summary.split('·')[1] : `${w.wind_mph} mph`;
+  return `
+    <div class="weather-row">
+      <span class="wkv"><strong>${Math.round(w.temp_f)}°F</strong></span>
+      <span class="wkv">💨 <strong>${w.wind_mph} mph</strong> ${windLabel.trim()}</span>
+      <span class="roof-pill ${roof}">roof ${roof}</span>
+      <span class="wf-badge ${wfClass}" title="Weather adjustment to P(HR)">${wfDisplay}</span>
+    </div>
+  `;
+}
+
 function confTier(c) {
   if (!c) return '';
   const ch = c.charAt(0).toUpperCase();
@@ -2150,6 +2195,7 @@ function renderCard(p) {
         <div class="label">Matchup ${reverseBadge}</div>
         <div><span class="pitcher">${p.opp_pitcher}</span> · ${p.opp_hand}HP · ${p.park}</div>
       </div>
+      ${renderWeatherRow(p)}
       ${barrelLine}
       <div class="odds-row">
         <div class="odds-cell">
@@ -2298,11 +2344,24 @@ function openModal(rank) {
       </div>
       <p style="margin-top: 8px; font-size: 12px; color: var(--text-dim);">League-avg barrel%: hitter ~7.5%, SP allowed ~7.0%. Above 11% (hitter) or 9% (SP allowed) = HR-friendly clash.</p>
     </div>
+    ${p.weather ? `
+    <div class="modal-section">
+      <h4>Weather + roof</h4>
+      <div class="modal-stats-grid">
+        <div class="modal-stat"><div class="l">Temperature</div><div class="v">${Math.round(p.weather.temp_f)}°F</div></div>
+        <div class="modal-stat"><div class="l">Wind</div><div class="v">${p.weather.wind_mph} mph @ ${Math.round(p.weather.wind_dir_deg)}°</div></div>
+        <div class="modal-stat"><div class="l">Roof</div><div class="v">${p.roof_status}</div></div>
+        <div class="modal-stat"><div class="l">Weather factor</div><div class="v" style="color:${(p.weather_factor||1)>1.02?'var(--green)':(p.weather_factor||1)<0.98?'#ff7878':'var(--text)'}">×${(p.weather_factor||1).toFixed(3)}</div></div>
+      </div>
+      <p style="margin-top:8px;font-size:12px;color:var(--text-dim);">Closed roof or fixed dome → weather factor = 1.00 (neutralized). Open conditions: wind blowing OUT to outfield boosts; wind IN suppresses; warm temps add carry.</p>
+    </div>
+    ` : ''}
     <div class="modal-section">
       <h4>Inputs</h4>
       <div class="modal-stats-grid">
         <div class="modal-stat"><div class="l">Model P(HR)</div><div class="v">${(p.model_p_hr*100).toFixed(1)}%</div></div>
         <div class="modal-stat"><div class="l">Park HR factor</div><div class="v">${p.park_hr_factor}×</div></div>
+        <div class="modal-stat"><div class="l">Weather factor</div><div class="v">×${(p.weather_factor||1).toFixed(2)}</div></div>
         <div class="modal-stat"><div class="l">Lineup spot</div><div class="v">${p.lineup_spot}</div></div>
         <div class="modal-stat"><div class="l">Expected PA</div><div class="v">${p.expected_pa}</div></div>
       </div>
