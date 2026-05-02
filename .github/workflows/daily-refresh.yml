@@ -1,0 +1,42 @@
+name: Daily HR Picks Refresh
+
+# Runs every morning at 12:30 PM UTC = 8:30 AM ET (after most lineups posted, before first pitch).
+# To change the time, edit the cron string. https://crontab.guru/ helps.
+on:
+  schedule:
+    - cron: '30 12 * * *'   # 8:30 AM ET daily (12:30 UTC)
+  workflow_dispatch: {}      # also lets you manually trigger from GitHub Actions tab
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write        # needed to commit picks.json back to the repo
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run daily refresh
+        id: refresh
+        run: |
+          echo "Running refresh_picks.py for $(date -u +%Y-%m-%d)..."
+          python3 refresh_picks.py
+          echo "✓ Refresh complete"
+
+      - name: Commit & push if picks.json changed
+        run: |
+          git config user.name "marcus-hr-bot"
+          git config user.email "actions@github.com"
+          if git diff --quiet picks.json; then
+            echo "No changes to picks.json — skipping commit"
+          else
+            git add picks.json
+            git commit -m "Daily picks refresh: $(date -u +%Y-%m-%d)"
+            git push
+            echo "✓ Committed updated picks.json"
+          fi

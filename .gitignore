@@ -1,0 +1,6 @@
+.DS_Store
+.~lock.*
+*.tmp
+__pycache__/
+*.pyc
+slate_data.json

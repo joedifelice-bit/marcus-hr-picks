@@ -1,0 +1,2320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MLB HR Daily Prop Picks</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg-1: #0a0e1a;
+    --bg-2: #0f1525;
+    --bg-3: #1a2235;
+    --surface: rgba(255,255,255,0.04);
+    --surface-2: rgba(255,255,255,0.06);
+    --border: rgba(255,255,255,0.08);
+    --text: #e8eaf0;
+    --text-2: #9aa3b8;
+    --text-dim: #6b7388;
+    --accent: #4f9eff;
+    --accent-2: #6bbcff;
+    --green: #10b981;
+    --green-bg: rgba(16, 185, 129, 0.12);
+    --yellow: #f59e0b;
+    --yellow-bg: rgba(245, 158, 11, 0.14);
+    --red: #ef4444;
+    --red-bg: rgba(239, 68, 68, 0.12);
+    --shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  html, body {
+    background: linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    background-image:
+      radial-gradient(ellipse 800px 400px at 80% -10%, rgba(79, 158, 255, 0.08), transparent),
+      radial-gradient(ellipse 600px 300px at 10% 110%, rgba(16, 185, 129, 0.06), transparent);
+    background-attachment: fixed;
+  }
+  .container { max-width: 1280px; margin: 0 auto; padding: 32px 24px 64px; }
+
+  /* Header */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 0 32px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 32px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .logo {
+    width: 42px; height: 42px;
+    background: linear-gradient(135deg, #4f9eff, #10b981);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 18px; color: white;
+    box-shadow: 0 4px 14px rgba(79,158,255,0.35);
+  }
+  .brand-text h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
+  .brand-text p { font-size: 12px; color: var(--text-2); }
+  .header-meta { font-size: 12px; color: var(--text-2); text-align: right; }
+  .header-meta strong { color: var(--text); }
+  .badge-live {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; background: var(--green-bg); color: var(--green);
+    border-radius: 999px; font-size: 11px; font-weight: 600;
+    border: 1px solid rgba(16,185,129,0.3);
+  }
+  .badge-live::before { content: ''; width: 6px; height: 6px; background: var(--green); border-radius: 50%; box-shadow: 0 0 8px var(--green); }
+
+  /* Hero / empty state */
+  .hero {
+    text-align: center; padding: 48px 24px 64px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    box-shadow: var(--shadow);
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse 600px 200px at 50% 0%, rgba(79,158,255,0.12), transparent);
+    pointer-events: none;
+  }
+  .hero h2 {
+    font-size: 36px; font-weight: 800; letter-spacing: -0.02em;
+    margin-bottom: 12px;
+    background: linear-gradient(135deg, #fff, #9aa3b8);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .hero p { color: var(--text-2); max-width: 540px; margin: 0 auto 32px; font-size: 15px; }
+  .btn-generate {
+    background: linear-gradient(135deg, #4f9eff, #6bbcff);
+    color: white; border: none; padding: 16px 40px;
+    border-radius: 14px; font-size: 16px; font-weight: 700;
+    letter-spacing: 0.02em;
+    cursor: pointer; transition: all 0.2s;
+    box-shadow: 0 8px 24px rgba(79,158,255,0.4);
+    display: inline-flex; align-items: center; gap: 10px;
+    position: relative;
+  }
+  .btn-generate:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(79,158,255,0.5); }
+  .btn-generate:active { transform: translateY(0); }
+  .btn-generate:disabled { opacity: 0.7; cursor: wait; }
+  .btn-generate svg { width: 18px; height: 18px; }
+  .btn-pulse::after {
+    content: ''; position: absolute; inset: -2px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #4f9eff, #6bbcff);
+    opacity: 0.4; z-index: -1;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.4; }
+    50% { transform: scale(1.05); opacity: 0; }
+  }
+
+  /* Loading state */
+  .loading-state {
+    display: flex; flex-direction: column; align-items: center; gap: 16px;
+    padding: 64px 24px;
+  }
+  .spinner {
+    width: 48px; height: 48px;
+    border: 3px solid rgba(255,255,255,0.1);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-msg { color: var(--text-2); font-size: 14px; }
+
+  /* Stats row */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+  }
+  .stat-card .label { font-size: 11px; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; font-weight: 600; }
+  .stat-card .value { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; }
+  .stat-card .sub { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+  .stat-card.green .value { color: var(--green); }
+  .stat-card.yellow .value { color: var(--yellow); }
+  .stat-card.accent .value { color: var(--accent); }
+
+  /* Toolbar (filters, sort) */
+  .toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .filter-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip {
+    padding: 8px 16px; border-radius: 999px;
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--text-2); cursor: pointer;
+    font-size: 13px; font-weight: 600;
+    transition: all 0.15s;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .chip:hover { background: var(--surface-2); color: var(--text); }
+  .chip.active {
+    background: rgba(79,158,255,0.16);
+    border-color: rgba(79,158,255,0.4);
+    color: var(--accent-2);
+  }
+  .chip-count { font-size: 11px; padding: 1px 7px; border-radius: 999px; background: rgba(255,255,255,0.08); color: inherit; }
+  .chip.active .chip-count { background: rgba(79,158,255,0.25); }
+  .sort-select {
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--text); padding: 8px 14px; border-radius: 10px;
+    font-size: 13px; font-weight: 500;
+    cursor: pointer;
+  }
+  .sort-select:focus { outline: none; border-color: var(--accent); }
+
+  /* Picks grid */
+  .picks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 16px;
+  }
+  .pick-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.18s;
+    position: relative;
+    overflow: hidden;
+  }
+  .pick-card:hover { background: var(--surface-2); border-color: rgba(255,255,255,0.14); transform: translateY(-2px); }
+  .pick-card[data-action="BET"] { border-left: 3px solid var(--green); }
+  .pick-card[data-action="MONITOR"] { border-left: 3px solid var(--yellow); }
+  .pick-card[data-action="PASS"] { border-left: 3px solid rgba(239, 68, 68, 0.45); opacity: 0.78; }
+  .pick-card[data-action="PASS"]:hover { opacity: 1; }
+  .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+  .card-rank {
+    width: 28px; height: 28px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: var(--text-2);
+    flex-shrink: 0;
+  }
+  .card-action-badge {
+    padding: 4px 10px; border-radius: 999px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.04em;
+  }
+  .badge-bet { background: var(--green-bg); color: var(--green); border: 1px solid rgba(16,185,129,0.35); }
+  .badge-monitor { background: var(--yellow-bg); color: var(--yellow); border: 1px solid rgba(245,158,11,0.35); }
+  .badge-pass { background: var(--red-bg); color: #ff7878; border: 1px solid rgba(239,68,68,0.3); }
+
+  .card-player { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; }
+  .card-team-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-2); margin-bottom: 14px; }
+  .pill { padding: 2px 8px; border-radius: 999px; background: rgba(255,255,255,0.06); color: var(--text-2); font-size: 11px; font-weight: 600; }
+  .pill.hand { background: rgba(255,255,255,0.04); }
+
+  .card-matchup { font-size: 13px; color: var(--text-2); margin-bottom: 14px; }
+  .card-matchup .label { color: var(--text-dim); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; margin-bottom: 4px; }
+  .card-matchup .pitcher { color: var(--text); font-weight: 600; }
+
+  .odds-row {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+    margin-bottom: 14px;
+  }
+  .odds-cell {
+    background: rgba(0,0,0,0.25);
+    border-radius: 10px;
+    padding: 10px;
+    text-align: center;
+  }
+  .odds-cell .l { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; margin-bottom: 4px; }
+  .odds-cell .v { font-size: 16px; font-weight: 700; }
+  .odds-cell.ev .v.pos { color: var(--green); }
+  .odds-cell.ev .v.neg { color: #ff7878; }
+  .odds-cell.ev .v.zero { color: var(--yellow); }
+
+  .card-notes { font-size: 13px; color: var(--text-2); line-height: 1.5; }
+
+  .card-meta-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-top: 12px; margin-top: 12px;
+    border-top: 1px solid var(--border);
+    font-size: 11px; color: var(--text-dim);
+  }
+  .conf-badge {
+    padding: 3px 8px; border-radius: 6px; font-weight: 700;
+    background: rgba(255,255,255,0.06); color: var(--text); font-size: 11px;
+  }
+  .conf-A { background: rgba(16,185,129,0.18); color: #34e3a8; }
+  .conf-B { background: rgba(79,158,255,0.18); color: #76b8ff; }
+  .conf-C { background: rgba(245,158,11,0.16); color: #fbbf24; }
+  .conf-D { background: rgba(239,68,68,0.14); color: #ff8585; }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+    display: none; align-items: center; justify-content: center;
+    z-index: 100; padding: 20px;
+    backdrop-filter: blur(8px);
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: var(--bg-3);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px;
+    max-width: 640px;
+    width: 100%;
+    max-height: 88vh;
+    overflow-y: auto;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+  }
+  .modal-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 18px;
+  }
+  .modal-header .title { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+  .modal-header .sub { font-size: 13px; color: var(--text-2); margin-top: 2px; }
+  .close-btn {
+    background: rgba(255,255,255,0.06); border: none; color: var(--text);
+    width: 32px; height: 32px; border-radius: 8px; cursor: pointer;
+    font-size: 18px; line-height: 1;
+  }
+  .close-btn:hover { background: rgba(255,255,255,0.12); }
+  .modal-section { margin-top: 18px; }
+  .modal-section h4 { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; margin-bottom: 10px; }
+  .modal-section ul { list-style: none; padding: 0; }
+  .modal-section li { padding: 8px 12px; background: rgba(0,0,0,0.25); border-radius: 8px; margin-bottom: 6px; font-size: 13px; }
+  .modal-section.risks li { border-left: 2px solid var(--red); }
+  .modal-section p { color: var(--text-2); font-size: 13px; line-height: 1.6; }
+  .modal-stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .modal-stat {
+    background: rgba(0,0,0,0.25); border-radius: 10px; padding: 12px;
+  }
+  .modal-stat .l { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; margin-bottom: 4px; }
+  .modal-stat .v { font-size: 14px; font-weight: 600; }
+
+  /* Methodology / footer */
+  .footer-section {
+    margin-top: 36px;
+    padding: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+  }
+  .footer-section h3 { font-size: 16px; font-weight: 700; margin-bottom: 12px; }
+  .footer-section .muted { color: var(--text-2); font-size: 13px; }
+  .sources-list { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .sources-list a {
+    color: var(--accent-2); text-decoration: none;
+    padding: 6px 12px; background: rgba(79,158,255,0.08);
+    border: 1px solid rgba(79,158,255,0.2);
+    border-radius: 8px; font-size: 12px;
+  }
+  .sources-list a:hover { background: rgba(79,158,255,0.15); }
+
+  details summary {
+    cursor: pointer; font-weight: 600;
+    padding: 6px 0; user-select: none;
+    list-style: none;
+  }
+  details summary::-webkit-details-marker { display: none; }
+  details summary::before { content: '▸ '; color: var(--text-dim); transition: transform 0.15s; display: inline-block; }
+  details[open] summary::before { transform: rotate(90deg); }
+  details .content { padding: 12px 0 4px; color: var(--text-2); font-size: 13px; line-height: 1.6; }
+
+  .refresh-banner {
+    background: rgba(79,158,255,0.07);
+    border: 1px solid rgba(79,158,255,0.22);
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 24px;
+    font-size: 13px;
+    color: var(--text-2);
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .stale-banner {
+    background: linear-gradient(90deg, rgba(245,158,11,0.10), rgba(239,68,68,0.06));
+    border: 1px solid rgba(245,158,11,0.42);
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 24px;
+    font-size: 13px;
+    color: var(--text-2);
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .stale-banner .icon {
+    background: rgba(245,158,11,0.22); width: 30px; height: 30px;
+    border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; color: var(--yellow); font-size: 16px; font-weight: 800;
+  }
+  .stale-banner code {
+    background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 4px;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace; font-size: 12px; color: var(--accent-2);
+  }
+  .badge-live.stale { background: rgba(245,158,11,0.16); color: var(--yellow); border-color: rgba(245,158,11,0.4); }
+  .badge-live.stale::before { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
+  .refresh-banner .icon {
+    background: rgba(79,158,255,0.16); width: 30px; height: 30px;
+    border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; color: var(--accent-2); font-size: 15px;
+  }
+  .refresh-banner code {
+    background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 4px;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace; font-size: 12px; color: var(--accent-2);
+  }
+
+  .empty-msg { text-align: center; padding: 64px 24px; color: var(--text-2); }
+  .hidden { display: none !important; }
+
+  /* Sportsbook toggle (segmented control) */
+  .book-toggle-wrap {
+    display: inline-flex; flex-direction: column; align-items: center; gap: 8px;
+    margin-bottom: 24px;
+  }
+  .book-toggle-label {
+    font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700;
+  }
+  .book-toggle {
+    display: inline-flex;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 4px;
+    gap: 4px;
+  }
+  .book-btn {
+    background: transparent; border: none; cursor: pointer;
+    padding: 8px 18px; border-radius: 9px;
+    font-size: 13px; font-weight: 600;
+    color: var(--text-2);
+    transition: all 0.15s;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .book-btn:hover { color: var(--text); }
+  .book-btn.active {
+    background: linear-gradient(135deg, #4f9eff, #6bbcff);
+    color: white;
+    box-shadow: 0 4px 12px rgba(79,158,255,0.35);
+  }
+  .book-btn .logo-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+  }
+  .book-btn[data-book="fanduel"] .logo-dot { background: #1493ff; }
+  .book-btn[data-book="bet99"] .logo-dot { background: #2ecc71; }
+  .book-btn.active .logo-dot { background: white; box-shadow: 0 0 6px rgba(255,255,255,0.6); }
+
+  .est-badge {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 6px;
+    background: rgba(245,158,11,0.18);
+    border: 1px solid rgba(245,158,11,0.45);
+    color: var(--yellow);
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    vertical-align: middle;
+  }
+
+  /* Bankroll / unit-size settings panel */
+  .settings-trigger {
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--text-2); padding: 8px 14px; border-radius: 10px;
+    font-size: 13px; font-weight: 500; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 8px;
+    transition: all 0.15s;
+  }
+  .settings-trigger:hover { background: var(--surface-2); color: var(--text); }
+  .settings-trigger svg { width: 14px; height: 14px; }
+
+  .settings-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-bottom: 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+  }
+  .settings-panel .field { display: flex; flex-direction: column; gap: 4px; }
+  .settings-panel .field label {
+    font-size: 10px; color: var(--text-dim);
+    text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700;
+  }
+  .settings-panel input, .settings-panel select {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+  }
+  .settings-panel input:focus, .settings-panel select:focus {
+    outline: none; border-color: var(--accent);
+  }
+  .settings-panel .help {
+    font-size: 11px; color: var(--text-dim); line-height: 1.4;
+  }
+
+  /* Per-pick unit recommendation */
+  .units-row {
+    display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+    padding: 10px 12px;
+    background: linear-gradient(90deg, rgba(16,185,129,0.10), rgba(79,158,255,0.06));
+    border: 1px solid rgba(16,185,129,0.25);
+    border-radius: 10px;
+    margin-bottom: 12px;
+    font-size: 12px;
+  }
+  .units-row.skip {
+    background: rgba(255,255,255,0.03);
+    border-color: var(--border);
+    color: var(--text-dim);
+  }
+  .units-pill {
+    background: var(--green);
+    color: white;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+  }
+  .units-pill.skip { background: rgba(255,255,255,0.08); color: var(--text-dim); }
+  .units-meta { color: var(--text-2); }
+  .units-amount { color: var(--text); font-weight: 700; }
+
+  /* Reverse-split badge + barrel row (model v2) */
+  .rev-flag {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 8px;
+    background: linear-gradient(90deg, rgba(124,58,237,0.18), rgba(167,139,250,0.18));
+    border: 1px solid rgba(167,139,250,0.45);
+    color: #c4b5fd;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    vertical-align: middle;
+  }
+  .barrel-row {
+    display: flex; gap: 16px; flex-wrap: wrap;
+    padding: 8px 12px;
+    background: rgba(0,0,0,0.18);
+    border-radius: 10px;
+    margin-bottom: 12px;
+    font-size: 12px;
+    color: var(--text-2);
+  }
+  .barrel-row .bk { display: inline-flex; align-items: center; gap: 6px; }
+  .barrel-row .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: rgba(255,255,255,0.18);
+  }
+  .barrel-row .dot.warm { background: var(--yellow); box-shadow: 0 0 6px rgba(245,158,11,0.5); }
+  .barrel-row .dot.hot { background: var(--green); box-shadow: 0 0 8px rgba(16,185,129,0.6); }
+
+  .reverse-banner {
+    background: linear-gradient(90deg, rgba(124,58,237,0.10), rgba(79,158,255,0.06));
+    border: 1px solid rgba(167,139,250,0.30);
+    padding: 12px 14px;
+    border-radius: 10px;
+  }
+  .reverse-banner h4 { color: #c4b5fd !important; }
+  .reverse-banner p { color: #d1c8ff !important; }
+
+  @media (max-width: 640px) {
+    .hero h2 { font-size: 28px; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .picks-grid { grid-template-columns: 1fr; }
+    .toolbar { flex-direction: column; align-items: stretch; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="brand">
+      <div class="logo">M</div>
+      <div class="brand-text">
+        <h1>MLB HR Daily Prop Picks</h1>
+        <p>Daily +EV home run plays with model fair odds vs FanDuel</p>
+      </div>
+    </div>
+    <div class="header-meta">
+      <span class="badge-live" id="dataStatus">Data ready</span>
+      <div style="margin-top: 6px;">Today: <strong id="todayLabel">—</strong></div>
+      <div style="margin-top: 2px; color: var(--text-dim);">Picks data: <strong id="slateLabel">—</strong></div>
+    </div>
+  </header>
+
+  <!-- Stale-data banner (shown only when picks.json date != today) -->
+  <div id="staleBanner" class="stale-banner hidden">
+    <div class="icon">!</div>
+    <div>
+      <strong style="color: var(--text);">Picks data is stale.</strong>
+      Loaded picks are for <strong id="staleSlateDate">—</strong>, but today is <strong id="staleToday">—</strong>.
+      Ask Claude in Cowork mode to "regenerate today's HR picks" — Claude will overwrite <code>picks.json</code> with today's slate.
+    </div>
+  </div>
+
+  <!-- Initial empty state with Generate button -->
+  <section id="heroSection" class="hero">
+    <h2>Generate today's HR picks</h2>
+    <p>One click runs the model: pitcher form vs hitter splits vs pitcher hand, park HR factor, sportsbook line comparison, EV ranking. Top 30 ranked, tagged BET / MONITOR / PASS.</p>
+
+    <div class="book-toggle-wrap">
+      <span class="book-toggle-label">Compare model vs</span>
+      <div class="book-toggle" role="tablist" id="bookToggle">
+        <button class="book-btn active" data-book="fanduel" role="tab" aria-selected="true">
+          <span class="logo-dot"></span>FanDuel
+        </button>
+        <button class="book-btn" data-book="bet99" role="tab" aria-selected="false">
+          <span class="logo-dot"></span>Bet99
+        </button>
+      </div>
+    </div>
+
+    <br>
+    <button id="generateBtn" class="btn-generate btn-pulse">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" stroke-linejoin="round" stroke-linecap="round"/></svg>
+      Generate Today's Picks
+    </button>
+  </section>
+
+  <!-- Loading state -->
+  <section id="loadingSection" class="hidden">
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <div class="loading-msg" id="loadingMsg">Loading slate…</div>
+    </div>
+  </section>
+
+  <!-- Results -->
+  <section id="resultsSection" class="hidden">
+    <div class="refresh-banner">
+      <div class="icon">i</div>
+      <div>
+        <strong style="color: var(--text);">For tomorrow's picks:</strong> ask Claude to "regenerate today's HR picks" — the assistant will research the slate, update <code>picks.json</code>, then click <strong>Generate</strong> here to see the new card. Confidence improves significantly when you paste the FanDuel HR prop list directly.
+      </div>
+    </div>
+
+    <!-- Bankroll & Kelly settings (collapsed by default) -->
+    <div class="settings-panel hidden" id="settingsPanel">
+      <div class="field">
+        <label>Bankroll ($)</label>
+        <input type="number" id="bankrollInput" min="100" step="50" />
+        <span class="help">Total funds set aside for prop bets. Drives 1u definition.</span>
+      </div>
+      <div class="field">
+        <label>1 unit = % of bankroll</label>
+        <select id="unitPctSelect">
+          <option value="0.005">0.5% (very conservative)</option>
+          <option value="0.01" selected>1% (recommended)</option>
+          <option value="0.02">2% (aggressive)</option>
+        </select>
+        <span class="help">Standard sharp sizing is 1% per unit.</span>
+      </div>
+      <div class="field">
+        <label>Kelly fraction</label>
+        <select id="kellyFracSelect">
+          <option value="0.125">⅛ Kelly (very safe)</option>
+          <option value="0.25" selected>¼ Kelly (recommended)</option>
+          <option value="0.5">½ Kelly (aggressive)</option>
+          <option value="1">Full Kelly (volatile)</option>
+        </select>
+        <span class="help">Quarter-Kelly balances growth vs drawdown for prop bets.</span>
+      </div>
+      <div class="field">
+        <label>Max units per bet</label>
+        <select id="maxUnitsSelect">
+          <option value="2">2u cap</option>
+          <option value="3" selected>3u cap (recommended)</option>
+          <option value="5">5u cap</option>
+          <option value="10">10u cap (no cap)</option>
+        </select>
+        <span class="help">Hard ceiling so a single play never blows up your day.</span>
+      </div>
+    </div>
+
+    <div class="stats-row" id="statsRow"></div>
+
+    <div class="toolbar">
+      <div class="filter-chips" id="filterChips">
+        <button class="chip active" data-filter="ALL">All <span class="chip-count" id="cnt-ALL">0</span></button>
+        <button class="chip" data-filter="BET">BET <span class="chip-count" id="cnt-BET">0</span></button>
+        <button class="chip" data-filter="MONITOR">MONITOR <span class="chip-count" id="cnt-MONITOR">0</span></button>
+        <button class="chip" data-filter="PASS">PASS <span class="chip-count" id="cnt-PASS">0</span></button>
+      </div>
+      <div style="display: inline-flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+        <div class="book-toggle" id="bookToggleToolbar" role="tablist">
+          <button class="book-btn active" data-book="fanduel" role="tab" aria-selected="true">
+            <span class="logo-dot"></span>FanDuel
+          </button>
+          <button class="book-btn" data-book="bet99" role="tab" aria-selected="false">
+            <span class="logo-dot"></span>Bet99
+          </button>
+        </div>
+        <button class="settings-trigger" id="settingsBtn" title="Bankroll & Kelly settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Bankroll
+        </button>
+        <select class="sort-select" id="sortSelect">
+          <option value="ev">Sort by EV %</option>
+          <option value="units">Sort by Units</option>
+          <option value="prob">Sort by Model P(HR)</option>
+          <option value="conf">Sort by Confidence</option>
+          <option value="rank">Sort by Rank</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="picks-grid" id="picksGrid"></div>
+
+    <div class="footer-section">
+      <details>
+        <summary>How the model works</summary>
+        <div class="content">
+          <p><strong>Probability:</strong> P(HR) = HR/PA vs pitcher hand × Park HR factor × Pitcher HR/9 multiplier (60% L5 + 40% season) × Form factor × Expected PA.</p>
+          <p style="margin-top: 8px;"><strong>Fair odds:</strong> If P &lt; 0.5 → +(1−P)/P × 100. <strong>EV %:</strong> P × FD payout − (1−P).</p>
+          <p style="margin-top: 8px;"><strong>Tiers:</strong> BET = EV ≥ +5% &amp; confidence ≥ B−. MONITOR = marginal (−5% to +5% EV) or +EV at lower confidence. PASS = clearly −EV at quoted FD line.</p>
+          <p style="margin-top: 8px;"><strong>Anti-"due" logic:</strong> drought streaks are not boosters. Recent HR streaks only count when supported by sustained barrel/hard-hit data.</p>
+        </div>
+      </details>
+      <details style="margin-top: 8px;">
+        <summary>Data confidence &amp; sources</summary>
+        <div class="content">
+          <p id="dataConfidence"></p>
+          <ul class="sources-list" id="sourcesList"></ul>
+        </div>
+      </details>
+    </div>
+  </section>
+
+</div>
+
+<!-- Detail modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div>
+        <div class="title" id="modalTitle"></div>
+        <div class="sub" id="modalSub"></div>
+      </div>
+      <button class="close-btn" onclick="closeModal()">×</button>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// Embedded picks data — refreshed each slate by Claude
+// (Mirror of picks.json kept inline so the file works via double-click)
+// ============================================================
+const PICKS_DATA = {
+  "generated_at": "2026-05-01T08:30:00-04:00",
+  "slate_date": "2026-05-01",
+  "slate_label": "Friday, May 1, 2026 (v2 — barrel-first model + reverse splits)",
+  "games_in_slate": 14,
+  "games_analyzed": 10,
+  "data_confidence": "Medium-high — pitcher matchups confirmed for 10 of 14 games via web search; FanDuel HR odds confirmed for 13 hitters today including Judge, Albies, Acuna, Goodman, Cruz, EDLC.",
+  "model_version": "2.0",
+  "methodology_summary": "P(HR) = HR/PA-vs-hand × Park HR factor × Pitcher HR/9 multiplier × Barrel-quality multiplier × Form factor × Expected PA. Reverse-split flag overrides naive same-hand penalty.",
+  "tier_thresholds": {
+    "BET": "EV ≥ +5% AND confidence ≥ B-",
+    "MONITOR": "EV between -5% and +5% OR +EV at lower confidence",
+    "PASS": "EV < -5% at quoted FD line"
+  },
+  "reverse_split_legend": {
+    "FLAGGED": "Pitcher's same-handed OPS allowed > opposite-handed (model overrides naive platoon)",
+    "NORMAL": "Standard L/R splits apply"
+  },
+  "picks": [
+    {
+      "rank": 1,
+      "action": "BET",
+      "player": "Ozzie Albies",
+      "team": "ATL",
+      "bat": "S",
+      "opp_team": "COL",
+      "opp_pitcher": "Jose Quintana",
+      "opp_hand": "L",
+      "park": "Coors Field",
+      "park_hr_factor": 1.3,
+      "lineup_spot": "2nd (est)",
+      "expected_pa": 4.5,
+      "hitter_barrel_pct": 9.5,
+      "pitcher_barrel_allowed_pct": 9.0,
+      "reverse_split_flag": "NORMAL",
+      "model_p_hr": 0.24,
+      "fair_odds": "+317",
+      "fd_odds": "+490",
+      "ev_pct": 0.42,
+      "confidence": "A",
+      "notes": "INSANE career edge: Albies 9-for-19 with 3 HR off Quintana for 1.553 OPS. Switch hitter bats R vs LHP. Coors HR factor 1.30. Quintana 4.91 ERA, 1.53 WHIP, weak form. Top play of the day.",
+      "key_stats": [
+        "Career vs Quintana: 9-for-19, 3 HR, 1.553 OPS",
+        "Albies 2026: .323 BA, 7 HR, .540 SLG",
+        "Quintana 2026: 4.91 ERA, 18.1 IP",
+        "Coors HR factor: 1.30"
+      ],
+      "risks": [
+        "Small career sample (19 AB) — career edge could be variance",
+        "Quintana's slider plays better vs RHB than career suggests"
+      ],
+      "bet99_odds": "+530",
+      "bet99_status": "estimated"
+    },
+    {
+      "rank": 2,
+      "action": "MONITOR",
+      "player": "Aaron Judge",
+      "team": "NYY",
+      "bat": "R",
+      "opp_team": "BAL",
+      "opp_pitcher": "Cade Povich",
+      "opp_hand": "L",
+      "park": "Yankee Stadium",
+      "park_hr_factor": 1.12,
+      "lineup_spot": "2nd (est)",
+      "expected_pa": 4.5,
+      "hitter_barrel_pct": 14.2,
+      "pitcher_barrel_allowed_pct": 9.5,
+      "reverse_split_flag": "NORMAL",
+      "model_p_hr": 0.28,
+      "fair_odds": "+257",
+      "fd_odds": "+220",
+      "ev_pct": -0.104,
+      "confidence": "A",
+      "notes": "Judge 14.2% barrel% (top-5 MLB), 12 HR in ~32 G, .622 SLG. RvL platoon at Yankee Stadium (RHB pull HR factor 1.12). Povich is rookie LHP — vulnerable to RHB. Premium spot but FD line tight at -EV. Trigger BET if FD ≥ +250.",
+      "key_stats": [
+        "Judge barrel%: 14.2% (top-5 MLB)",
+        "Judge 2026: 12 HR, .622 SLG, .381 OBP",
+        "Yankee Stadium RHB HR factor: 1.12",
+        "Povich rookie LHP — limited sample"
+      ],
+      "risks": [
+        "FD priced too short to be +EV at +220",
+        "Public-name premium on Judge"
+      ],
+      "bet99_odds": "+240",
+      "bet99_status": "estimated"
+    },
+    {
+      "rank": 3,
+      "action": "BET",
+      "player": "Hunter Goodman",
+      "team": "COL",
+      "bat": "R",
+      "opp_team": "ATL",
+      "opp_pitcher": "Grant Holmes",
+      "opp_hand": "R",
+      "park": "Coors Field",
+      "park_hr_factor": 1.3,
+      "lineup_spot": "4th (est)",
+      "expected_pa": 4.3,
+      "hitter_barrel_pct": 11.5,
+      "pitcher_barrel_allowed_pct": 8.0,
+      "reverse_split_flag": "NORMAL",
+      "model_p_hr": 0.22,
+      "fair_odds": "+355",
+      "fd_odds": "+470",
+      "ev_pct": 0.254,
+      "confidence": "A-",
+      "notes": "Goodman 9 HR in 29 G (24.1% rate), elite Coors home power. Holmes is decent (3.62 ERA) but Coors HR factor 1.30 dominates. RvR platoon neutral but park overrides.",
+      "key_stats": [
+        "Goodman: 9 HR in 29 G — 24.1% HR-per-game",
+        "Coors HR factor: 1.30",
+        "Holmes 2026: 3.62 ERA, 1.21 WHIP",
+        "Goodman home/away splits favor Coors"
+      ],
+      "risks": [
+        "RvR platoon doesn't add edge",
+        "Holmes solid form"
+      ],
+      "bet99_odds": "+510",
+      "bet99_status": "estimated"
+    },
+    {
+      "rank": 4,
+      "action": "PASS",
+      "player": "Marcell Ozuna",
+      "team": "PIT",
+      "bat": "R",
+      "opp_team": "CIN",
+      "opp_pitcher": "Brady Singer",
+      "opp_hand": "R",
+      "park": "PNC Park",
+      "park_hr_factor": 0.85,
+      "lineup_spot": "4-5 (est)",
+      "expected_pa": 4.0,
+      "hitter_barrel_pct": 10.0,
+      "pitcher_barrel_allowed_pct": 8.0,
+      "reverse_split_flag": "NORMAL",
+      "model_p_hr": 0.09,
+      "fair_odds": "+1011",
+      "fd_odds": "+710",
+      "ev_pct": -0.27,
+      "confidence": "C",
+      "notes": "TEAM CORRECTED — Ozuna is on PIT in 2026 (signed Feb 16). Game is CIN @ PIT vs Singer (RHP), not ATL @ COL vs Quintana. RvR neutral. PNC kills RHB HRs (factor 0.85). Ozuna 2 HR in 26 G — slow form. Pass.",
+      "key_stats": [
+        "Ozuna signed with PIT 2026-02-16",
+        "PNC RHB HR factor: 0.85 (suppresses)",
+        "Singer 2026: 2-1, RHP",
+        "Ozuna 2026: 2 HR in 26 G (slow)"
+      ],
+      "risks": [
+        "Park kills RHB HRs",
+        "Form is poor"
+      ],
+      "bet99_odds": "+800",
+      "bet99_status": "estimated"
+    },
+    {
+      "rank": 5,
+      "action": "MONITOR",
+      "player": "Elly De La Cruz",
+      "team": "CIN",
+      "bat": "S",
+      "opp_team": "PIT",
+      "opp_pitcher": "Mitch Keller",
+      "opp_hand": "R",
+      "park": "PNC Park",
+      "park_hr_factor": 0.95,
+      "lineup_spot": "3rd (est)",
+      "expected_pa": 4.3,
+      "hitter_barrel_pct": 13.5,
+      "pitcher_barrel_allowed_pct": 8.5,
+      "reverse_split_flag": "NORMAL",
+      "model_p_hr": 0.18,
+      "fair_odds": "+456",
+      "fd_odds": "+420",
+      "ev_pct": -0.064,
+      "confidence": "B+",
+      "notes": "EDLC switch hitter, bats L vs RHP — PNC LHB-friendly RF. 10 HR in 31 G (29% HR-per-game). Keller league-avg-ish. Marginal -EV at +420 — bet if FD ≥ +470.",
+      "key_stats": [
+        "EDLC: 10 HR in 31 G (29% rate)",
+        "EDLC barrel%: ~13.5% (top-15 MLB)",
+        "PNC LHB HR factor: 1.05",
+        "Keller barrel% allowed: 8.5%"
+      ],
+      "risks": [
+        "Strikeout-prone — variance high",
+        "FD line tight"
+      ],
+      "bet99_odds": "+450",
+      "bet99_status": "estimated"
+    },
+    {
+      "rank": 6,
+      "action": "MONITOR",
+      "player": "Oneil Cruz",
+      "team": "PIT",
+      "bat": "L",
+      "opp_team": "CIN",
+      "opp_pitcher": "Brady Singer",
+      "opp_hand": "R",
+      "park": "PNC Park",
+      "park_hr_factor": 1.05,
+      "lineup_spot": "3-4 (est)",
+      "expected_pa": 4.3,
+      "hitter_barrel_pct": 22.7,
+      "pitcher_barrel_allowed_pct": 8.0,
+      "reverse_split_flag": "NORMAL",
+      "model_p_hr": 0.22,
+      "fair_odds": "+355",
+      "fd_odds": "+300",
+      "ev_pct": -0.12,
+      "confidence": "A-",
+      "notes": "Cruz 22.7% barrel% (top-5 MLB), 9 HR in 30 G (26.7% rate), 99th-pct exit velo. LvR favorable. Singer's sinker keeps balls in but Cruz's hard contact wins. FD too short — wait for +360 to fire.",
+      "key_stats": [
+        "Cruz barrel%: 22.7% (top-5 MLB)",
+        "Cruz hard-hit%: 63.8% (top-5)",
+        "Cruz 2026: 9 HR in 30 G",
+        "PNC LHB HR factor: 1.05"
+      ],
+      "risks": [
+        "FD priced his historic hot streak — line short",
+        "Singer GB-heavy"
+      ],
+      "bet99_odds": "+320",
+      "bet99_status": "estimated"
+    },
+    {
+      "rank": 7,
+      "action": "MONITOR",
+      "player": "Mickey Moniak",
+      "team": "COL",
+      "bat": "L",
+      "opp_team": "ATL",
+      "opp_pitcher": "Grant Holmes",
+      "opp_hand": "R",
+      "park": "Coors Field",
+      "park_hr_factor": 1.3,
+      "lineup_spot": "5-6 (est)",
+      "expected_pa": 4.0,
+      "hitter_barrel_pct": 10.0,
+      "pitcher_barrel_allowed_pct": 8.0,
+      "reverse_split_flag": "NORMAL",
+      "model_p_hr": 0.18,
+      "fair_odds": "+456",
+      "fd_odds": "+420",
+      "ev_pct": -0.064,
+      "confidence": "B",
+      "notes": "Moniak 8 HR in 25 G (20% rate). LvR favorable, Coors HR factor 1.30. Marginal -EV at +420 — wait for +470.",
+      "key_stats": [
+        "Moniak: 8 HR in 25 G (20% rate)",
+        "Coors HR factor 1.30",
+        "LvR platoon"
+      ],
+      "risks": [
+        "Holmes career vs LHB neutral"
+      ],
+      "bet99_odds": "+450",
+      "bet99_status": "estimated"
+    },
+    {
+      "rank": 8,
+      "action": "MONITOR",
+      "player": "Austin Riley",
+      "team": "ATL",
+      "bat": "R",
+      "opp_team": "COL",
+      "opp_pitcher": "Jose Quintana",
+      "opp_hand": "L",
+      "park": "Coors Field",
+      "park_hr_factor": 1.3,
+      "lineup_spot": "3rd (est)",
+      "expected_pa": 4.5,
+      "hitter_barrel_pct": 12.0,
+      "pitcher_barrel_allowed_pct": 9.0,
+      "reverse_split_flag": "NORMAL",
+      "model_p_hr": 0.17,
+      "fair_odds": "+488",
+      "fd_odds": "+390",
+      "ev_pct": -0.165,
+      "confidence": "B",
+      "notes": "Career power. RvL platoon at Coors. Quintana weak. But FD priced him short on his name — slow start (3 HR in 32 G) hasn't been respected. Bet if FD ≥ +470.",
+      "key_stats": [
+        "Riley career barrel%: 12%",
+        "RvL platoon",
+        "Coors HR factor"
+      ],
+      "risks": [
+        "Slow start to 2026 (3 HR in 32 G)",
+        "Public name premium"
+      ],
+      "bet99_odds": "+420",
+      "bet99_status": "estimated"
+    },
+    {
+      "rank": 9,
+      "action": "MONITOR",
+      "player": "Drake Baldwin",
+      "team": "ATL",
+      "bat": "L",
+      "opp_team": "COL",
+      "opp_pitcher": "Jose Quintana",
+      "opp_hand": "L",
+      "park": "Coors Field",
+      "park_hr_factor": 1.3,
+      "lineup_spot": "5-6 (est)",
+      "expected_pa": 4.0,
+      "hitter_barrel_pct": 12.0,
+      "pitcher_barrel_allowed_pct": 9.0,
+      "reverse_split_flag": "NORMAL",
+      "model_p_hr": 0.17,
+      "fair_odds": "+488",
+      "fd_odds": "+490",
+      "ev_pct": 0.003,
+      "confidence": "B-",
+      "notes": "Baldwin 7 HR in 32 G (21.9% rate). LvL unfavorable but Coors HR factor 1.30 helps and Quintana weak. Flat EV — coin flip.",
+      "key_stats": [
+        "Baldwin: 7 HR in 32 G",
+        "Coors HR factor",
+        "Quintana weak form"
+      ],
+      "risks": [
+        "LvL platoon",
+        "Catcher fatigue"
+      ],
+      "bet99_odds": "+530",
+      "bet99_status": "estimated"
+    },
+    {
+      "rank": 10,
+      "action": "MONITOR",
+      "player": "Juan Soto",
+      "team": "NYM",
+      "bat": "L",
+      "opp_team": "LAA",
+      "opp_pitcher": "Walbert Urena",
+      "opp_hand": "R",
+      "park": "Angel Stadium",
+      "park_hr_factor": 1.02,
+      "lineup_spot": "2-3 (est)",
+      "expected_pa": 4.3,
+      "hitter_barrel_pct": 13.0,
+      "pitcher_barrel_allowed_pct": 9.5,
+      "reverse_split_flag": "NORMAL",
+      "model_p_hr": 0.2,
+      "fair_odds": "+400",
+      "fd_odds": "+370",
+      "ev_pct": -0.06,
+      "confidence": "B+",
+      "notes": "Soto hot — .412 BA, 2 HR last 5 games. LvR favorable. Urena 0-3 with 4.76 ERA — weak form. Marginal -EV at +370 — wait for +420.",
+      "key_stats": [
+        "Soto last 5 G: .412 BA, 2 HR",
+        "Urena 2026: 0-3, 4.76 ERA",
+        "Soto returning to OF this weekend"
+      ],
+      "risks": [
+        "Soto returning from forearm — usage TBD",
+        "FD line tight"
+      ],
+      "bet99_odds": "+400",
+      "bet99_status": "estimated"
+    },
+    {
+      "rank": 11,
+      "action": "MONITOR",
+      "player": "Ronald Acuña Jr.",
+      "team": "ATL",
+      "bat": "R",
+      "opp_team": "COL",
+      "opp_pitcher": "Jose Quintana",
+      "opp_hand": "L",
+      "park": "Coors Field",
+      "park_hr_factor": 1.3,
+      "lineup_spot": "1st (est)",
+      "expected_pa": 4.7,
+      "hitter_barrel_pct": 12.0,
+      "pitcher_barrel_allowed_pct": 9.0,
+      "reverse_split_flag": "NORMAL",
+      "model_p_hr": 0.16,
+      "fair_odds": "+525",
+      "fd_odds": "+370",
+      "ev_pct": -0.248,
+      "confidence": "B",
+      "notes": "RvL at Coors normally premium. Acuna 2 HR in 32 G — slow start, FD too aggressive on his name. Skip at +370.",
+      "key_stats": [
+        "Coors HR factor",
+        "Acuna: 2 HR in 32 G (slow)"
+      ],
+      "risks": [
+        "Cold form",
+        "Public name premium"
+      ],
+      "bet99_odds": "+400",
+      "bet99_status": "estimated"
+    },
+    {
+      "rank": 12,
+      "action": "PASS",
+      "player": "Cal Raleigh",
+      "team": "SEA",
+      "bat": "S",
+      "opp_team": "TBD",
+      "opp_pitcher": "TBD",
+      "opp_hand": "?",
+      "park": "TBD",
+      "park_hr_factor": 1.0,
+      "lineup_spot": "5th (est)",
+      "expected_pa": 4.0,
+      "hitter_barrel_pct": 12.0,
+      "pitcher_barrel_allowed_pct": null,
+      "reverse_split_flag": "NORMAL",
+      "model_p_hr": 0.16,
+      "fair_odds": "+525",
+      "fd_odds": "+310",
+      "ev_pct": -0.34,
+      "confidence": "C",
+      "notes": "Need matchup data. 7 HR in 32 G (21.9% rate). FD priced as star — line too short.",
+      "key_stats": [
+        "Raleigh: 7 HR in 32 G"
+      ],
+      "risks": [
+        "Matchup unknown",
+        "Line too short"
+      ],
+      "bet99_odds": "+330",
+      "bet99_status": "estimated"
+    },
+    {
+      "rank": 13,
+      "action": "MONITOR",
+      "player": "Brandon Lowe",
+      "team": "PIT",
+      "bat": "L",
+      "opp_team": "CIN",
+      "opp_pitcher": "Brady Singer",
+      "opp_hand": "R",
+      "park": "PNC Park",
+      "park_hr_factor": 1.05,
+      "lineup_spot": "3rd (est)",
+      "expected_pa": 4.3,
+      "hitter_barrel_pct": 12.0,
+      "pitcher_barrel_allowed_pct": 8.0,
+      "reverse_split_flag": "NORMAL",
+      "model_p_hr": 0.17,
+      "fair_odds": "+488",
+      "fd_odds": "+490",
+      "ev_pct": 0.003,
+      "confidence": "B-",
+      "notes": "TEAM CORRECTED — Lowe traded to PIT on 2025-12-19 (no longer on TB). Slashing .278/.400/.678, 186 wRC+ in early 2026. LvR favorable, PNC LHB-friendly RF. Marginal — bet if FD ≥ +500.",
+      "key_stats": [
+        "Lowe traded to PIT 2025-12-19",
+        "Lowe 2026 line: .278/.400/.678, 186 wRC+",
+        "PNC LHB HR factor: 1.05",
+        "LvR platoon advantage"
+      ],
+      "risks": [
+        "Singer GB-tendency",
+        "Limited 2026 sample"
+      ],
+      "bet99_odds": "+530",
+      "bet99_status": "estimated"
+    },
+    {
+      "rank": 14,
+      "action": "PASS",
+      "player": "Sal Stewart",
+      "team": "CIN",
+      "bat": "R",
+      "opp_team": "PIT",
+      "opp_pitcher": "Mitch Keller",
+      "opp_hand": "R",
+      "park": "PNC Park",
+      "park_hr_factor": 0.95,
+      "lineup_spot": "5-6 (est)",
+      "expected_pa": 4.0,
+      "hitter_barrel_pct": 14.8,
+      "pitcher_barrel_allowed_pct": 8.5,
+      "reverse_split_flag": "NORMAL",
+      "model_p_hr": 0.16,
+      "fair_odds": "+525",
+      "fd_odds": "+520",
+      "ev_pct": -0.008,
+      "confidence": "B",
+      "notes": "Stewart 14.8% barrel% (top-5 MLB). RvR neutral. PNC suppresses RHB HRs (factor 0.85). Almost flat EV — close call but slightly under.",
+      "key_stats": [
+        "Stewart 14.8% barrel% (top-5)",
+        "Keller league-avg pitcher",
+        "PNC RHB factor 0.85"
+      ],
+      "risks": [
+        "PNC kills RHB HRs",
+        "RvR neutral"
+      ],
+      "bet99_odds": "+580",
+      "bet99_status": "estimated"
+    },
+    {
+      "rank": 15,
+      "action": "PASS",
+      "player": "Yordan Alvarez",
+      "team": "HOU",
+      "bat": "L",
+      "opp_team": "BOS",
+      "opp_pitcher": "TBD",
+      "opp_hand": "?",
+      "park": "Fenway Park",
+      "park_hr_factor": 1.05,
+      "lineup_spot": "3rd (est)",
+      "expected_pa": 4.3,
+      "hitter_barrel_pct": 14.0,
+      "pitcher_barrel_allowed_pct": null,
+      "reverse_split_flag": "NORMAL",
+      "model_p_hr": 0.2,
+      "fair_odds": "+400",
+      "fd_odds": "+260",
+      "ev_pct": -0.28,
+      "confidence": "C+",
+      "notes": "Need BOS SP data. Yordan elite but Fenway is LHB-neutral and FD priced him short. Pass without confirmed matchup.",
+      "key_stats": [
+        "Yordan barrel%: ~14%",
+        "Career power vs RHP"
+      ],
+      "risks": [
+        "Matchup unconfirmed",
+        "Fenway LHB-neutral"
+      ],
+      "bet99_odds": "+280",
+      "bet99_status": "estimated"
+    },
+    {
+      "rank": 16,
+      "action": "PASS",
+      "player": "Vladimir Guerrero Jr.",
+      "team": "TOR",
+      "bat": "R",
+      "opp_team": "MIN",
+      "opp_pitcher": "TBD",
+      "opp_hand": "?",
+      "park": "Target Field",
+      "park_hr_factor": 0.98,
+      "lineup_spot": "3rd (est)",
+      "expected_pa": 4.3,
+      "hitter_barrel_pct": 11.0,
+      "pitcher_barrel_allowed_pct": null,
+      "reverse_split_flag": "NORMAL",
+      "model_p_hr": 0.13,
+      "fair_odds": "+669",
+      "fd_odds": "+450",
+      "ev_pct": -0.285,
+      "confidence": "C",
+      "notes": "Need MIN SP. Vlad elite vs RHP. FD too short on his name.",
+      "key_stats": [
+        "Career vs RHP elite"
+      ],
+      "risks": [
+        "Matchup unconfirmed"
+      ],
+      "bet99_odds": "+490",
+      "bet99_status": "estimated"
+    },
+    {
+      "rank": 17,
+      "action": "MONITOR",
+      "player": "Pete Alonso",
+      "team": "BAL",
+      "bat": "R",
+      "opp_team": "NYY",
+      "opp_pitcher": "Will Warren",
+      "opp_hand": "R",
+      "park": "Yankee Stadium",
+      "park_hr_factor": 1.05,
+      "lineup_spot": "3-4 (est)",
+      "expected_pa": 4.3,
+      "hitter_barrel_pct": 13.0,
+      "pitcher_barrel_allowed_pct": 8.5,
+      "reverse_split_flag": "NORMAL",
+      "model_p_hr": 0.16,
+      "fair_odds": "+525",
+      "fd_odds": "+480",
+      "ev_pct": -0.072,
+      "confidence": "B-",
+      "notes": "TEAM CORRECTED — Alonso signed with BAL 2025-12-11 (5-yr $155M). Game is BAL @ NYY vs Warren (RHP) at Yankee Stadium. RvR neutral but YS RHB pull factor 1.05. Marginal — bet if FD ≥ +540.",
+      "key_stats": [
+        "Alonso signed with BAL 2025-12-11",
+        "Yankee Stadium RHB HR factor: 1.05",
+        "Warren 2026: 3-0 record",
+        "Alonso career barrel%: ~13%"
+      ],
+      "risks": [
+        "RvR neutral",
+        "Warren strong form (3-0)"
+      ],
+      "bet99_odds": "+520",
+      "bet99_status": "estimated"
+    },
+    {
+      "rank": 18,
+      "action": "PASS",
+      "player": "Brent Rooker",
+      "team": "ATH",
+      "bat": "R",
+      "opp_team": "CLE",
+      "opp_pitcher": "TBD",
+      "opp_hand": "?",
+      "park": "Sutter Health Park",
+      "park_hr_factor": 1.1,
+      "lineup_spot": "3-4 (est)",
+      "expected_pa": 4.0,
+      "hitter_barrel_pct": 12.0,
+      "pitcher_barrel_allowed_pct": null,
+      "reverse_split_flag": "NORMAL",
+      "model_p_hr": 0.14,
+      "fair_odds": "+614",
+      "fd_odds": "+440",
+      "ev_pct": -0.244,
+      "confidence": "C",
+      "notes": "Need CLE SP. Park boost helps but FD priced tight.",
+      "key_stats": [
+        "Sutter Health HR factor 1.10"
+      ],
+      "risks": [
+        "Matchup unknown"
+      ],
+      "bet99_odds": "+480",
+      "bet99_status": "estimated"
+    },
+    {
+      "rank": 19,
+      "action": "PASS",
+      "player": "Riley Greene",
+      "team": "DET",
+      "bat": "L",
+      "opp_team": "TEX",
+      "opp_pitcher": "TBD",
+      "opp_hand": "?",
+      "park": "Comerica Park",
+      "park_hr_factor": 0.94,
+      "lineup_spot": "3rd (est)",
+      "expected_pa": 4.3,
+      "hitter_barrel_pct": 11.0,
+      "pitcher_barrel_allowed_pct": null,
+      "reverse_split_flag": "NORMAL",
+      "model_p_hr": 0.11,
+      "fair_odds": "+809",
+      "fd_odds": "+520",
+      "ev_pct": -0.318,
+      "confidence": "C",
+      "notes": "Need TEX SP. Comerica HR-suppressing.",
+      "key_stats": [
+        "Comerica HR factor 0.94"
+      ],
+      "risks": [
+        "Park suppression",
+        "Matchup unknown"
+      ],
+      "bet99_odds": "+580",
+      "bet99_status": "estimated"
+    },
+    {
+      "rank": 20,
+      "action": "PASS",
+      "player": "Bryce Harper",
+      "team": "PHI",
+      "bat": "L",
+      "opp_team": "MIA",
+      "opp_pitcher": "TBD",
+      "opp_hand": "?",
+      "park": "loanDepot park",
+      "park_hr_factor": 0.96,
+      "lineup_spot": "3rd (est)",
+      "expected_pa": 4.3,
+      "hitter_barrel_pct": 12.0,
+      "pitcher_barrel_allowed_pct": null,
+      "reverse_split_flag": "NORMAL",
+      "model_p_hr": 0.14,
+      "fair_odds": "+614",
+      "fd_odds": "+440",
+      "ev_pct": -0.244,
+      "confidence": "C",
+      "notes": "Need MIA SP. loanDepot suppresses HRs.",
+      "key_stats": [
+        "Harper career power"
+      ],
+      "risks": [
+        "Matchup unknown",
+        "Park suppresses"
+      ],
+      "bet99_odds": "+480",
+      "bet99_status": "estimated"
+    },
+    {
+      "rank": 21,
+      "action": "PASS",
+      "player": "Kyle Schwarber",
+      "team": "PHI",
+      "bat": "L",
+      "opp_team": "MIA",
+      "opp_pitcher": "TBD",
+      "opp_hand": "?",
+      "park": "loanDepot park",
+      "park_hr_factor": 0.96,
+      "lineup_spot": "1st (est)",
+      "expected_pa": 4.5,
+      "hitter_barrel_pct": 13.0,
+      "pitcher_barrel_allowed_pct": null,
+      "reverse_split_flag": "NORMAL",
+      "model_p_hr": 0.16,
+      "fair_odds": "+525",
+      "fd_odds": "+380",
+      "ev_pct": -0.232,
+      "confidence": "C",
+      "notes": "Need MIA SP. Schwarber three-true-outcomes player. Park suppresses.",
+      "key_stats": [
+        "Career power vs RHP"
+      ],
+      "risks": [
+        "Matchup unknown"
+      ],
+      "bet99_odds": "+410",
+      "bet99_status": "estimated"
+    },
+    {
+      "rank": 22,
+      "action": "PASS",
+      "player": "Shohei Ohtani",
+      "team": "LAD",
+      "bat": "L",
+      "opp_team": "STL",
+      "opp_pitcher": "TBD",
+      "opp_hand": "?",
+      "park": "Busch Stadium",
+      "park_hr_factor": 0.92,
+      "lineup_spot": "1-2 (est)",
+      "expected_pa": 4.5,
+      "hitter_barrel_pct": 13.0,
+      "pitcher_barrel_allowed_pct": null,
+      "reverse_split_flag": "NORMAL",
+      "model_p_hr": 0.18,
+      "fair_odds": "+456",
+      "fd_odds": "+280",
+      "ev_pct": -0.31,
+      "confidence": "B-",
+      "notes": "Need STL SP. Busch Stadium suppresses HRs. Public-name premium kills value.",
+      "key_stats": [
+        "Ohtani career power"
+      ],
+      "risks": [
+        "Matchup unknown",
+        "Park suppresses",
+        "Line too short"
+      ],
+      "bet99_odds": "+300",
+      "bet99_status": "estimated"
+    },
+    {
+      "rank": 23,
+      "action": "PASS",
+      "player": "Mookie Betts",
+      "team": "LAD",
+      "bat": "R",
+      "opp_team": "STL",
+      "opp_pitcher": "TBD",
+      "opp_hand": "?",
+      "park": "Busch Stadium",
+      "park_hr_factor": 0.92,
+      "lineup_spot": "2nd (est)",
+      "expected_pa": 4.3,
+      "hitter_barrel_pct": 11.0,
+      "pitcher_barrel_allowed_pct": null,
+      "reverse_split_flag": "NORMAL",
+      "model_p_hr": 0.13,
+      "fair_odds": "+669",
+      "fd_odds": "+450",
+      "ev_pct": -0.285,
+      "confidence": "C",
+      "notes": "Park kills RHB HRs in STL. Skip.",
+      "key_stats": [],
+      "risks": [
+        "Park suppresses"
+      ],
+      "bet99_odds": "+490",
+      "bet99_status": "estimated"
+    },
+    {
+      "rank": 24,
+      "action": "PASS",
+      "player": "Adley Rutschman",
+      "team": "BAL",
+      "bat": "S",
+      "opp_team": "NYY",
+      "opp_pitcher": "Will Warren",
+      "opp_hand": "R",
+      "park": "Yankee Stadium",
+      "park_hr_factor": 1.05,
+      "lineup_spot": "4-5 (est)",
+      "expected_pa": 4.0,
+      "hitter_barrel_pct": 9.0,
+      "pitcher_barrel_allowed_pct": 8.5,
+      "reverse_split_flag": "NORMAL",
+      "model_p_hr": 0.13,
+      "fair_odds": "+669",
+      "fd_odds": "+550",
+      "ev_pct": -0.155,
+      "confidence": "C+",
+      "notes": "Bats L vs RHP. Yankee Stadium LHB short porch. But Warren has been good (3-0). Modest pass.",
+      "key_stats": [
+        "Yankee Stadium LHB factor",
+        "Warren 3-0 record"
+      ],
+      "risks": [
+        "Catcher fatigue",
+        "Warren good form"
+      ],
+      "bet99_odds": "+620",
+      "bet99_status": "estimated"
+    },
+    {
+      "rank": 25,
+      "action": "PASS",
+      "player": "Gunnar Henderson",
+      "team": "BAL",
+      "bat": "L",
+      "opp_team": "NYY",
+      "opp_pitcher": "Will Warren",
+      "opp_hand": "R",
+      "park": "Yankee Stadium",
+      "park_hr_factor": 1.05,
+      "lineup_spot": "1-2 (est)",
+      "expected_pa": 4.5,
+      "hitter_barrel_pct": 12.0,
+      "pitcher_barrel_allowed_pct": 8.5,
+      "reverse_split_flag": "NORMAL",
+      "model_p_hr": 0.18,
+      "fair_odds": "+456",
+      "fd_odds": "+360",
+      "ev_pct": -0.172,
+      "confidence": "B",
+      "notes": "Henderson elite vs RHP. Yankee Stadium LHB-friendly. But Warren 3-0 form is strong and FD priced it short.",
+      "key_stats": [
+        "Henderson career barrel%: 12%",
+        "YS LHB short porch"
+      ],
+      "risks": [
+        "Warren strong form",
+        "Public name premium"
+      ],
+      "bet99_odds": "+390",
+      "bet99_status": "estimated"
+    },
+    {
+      "rank": 26,
+      "action": "PASS",
+      "player": "Kerry Carpenter",
+      "team": "DET",
+      "bat": "L",
+      "opp_team": "TEX",
+      "opp_pitcher": "TBD",
+      "opp_hand": "?",
+      "park": "Comerica Park",
+      "park_hr_factor": 0.94,
+      "lineup_spot": "5-6 (est)",
+      "expected_pa": 4.0,
+      "hitter_barrel_pct": 12.0,
+      "pitcher_barrel_allowed_pct": null,
+      "reverse_split_flag": "NORMAL",
+      "model_p_hr": 0.13,
+      "fair_odds": "+669",
+      "fd_odds": "+520",
+      "ev_pct": -0.193,
+      "confidence": "C",
+      "notes": "LHB power. Need TEX SP. Comerica suppresses.",
+      "key_stats": [
+        "LHB pull power"
+      ],
+      "risks": [
+        "Matchup unknown",
+        "Park suppresses"
+      ],
+      "bet99_odds": "+580",
+      "bet99_status": "estimated"
+    },
+    {
+      "rank": 27,
+      "action": "PASS",
+      "player": "James Wood",
+      "team": "WSH",
+      "bat": "L",
+      "opp_team": "MIL",
+      "opp_pitcher": "TBD",
+      "opp_hand": "?",
+      "park": "Nationals Park",
+      "park_hr_factor": 1.04,
+      "lineup_spot": "3rd (est)",
+      "expected_pa": 4.3,
+      "hitter_barrel_pct": 14.2,
+      "pitcher_barrel_allowed_pct": null,
+      "reverse_split_flag": "NORMAL",
+      "model_p_hr": 0.18,
+      "fair_odds": "+456",
+      "fd_odds": "+340",
+      "ev_pct": -0.208,
+      "confidence": "B-",
+      "notes": "Wood top-5 barrel% MLB. Need MIL SP. FD priced too tight on his hot stretch.",
+      "key_stats": [
+        "Wood barrel%: 14.2% (top-5)"
+      ],
+      "risks": [
+        "Matchup unknown",
+        "Public hot streak premium"
+      ],
+      "bet99_odds": "+370",
+      "bet99_status": "estimated"
+    },
+    {
+      "rank": 28,
+      "action": "PASS",
+      "player": "Anthony Volpe",
+      "team": "NYY",
+      "bat": "R",
+      "opp_team": "BAL",
+      "opp_pitcher": "Cade Povich",
+      "opp_hand": "L",
+      "park": "Yankee Stadium",
+      "park_hr_factor": 1.12,
+      "lineup_spot": "9th (est)",
+      "expected_pa": 3.8,
+      "hitter_barrel_pct": 9.0,
+      "pitcher_barrel_allowed_pct": 9.5,
+      "reverse_split_flag": "NORMAL",
+      "model_p_hr": 0.11,
+      "fair_odds": "+809",
+      "fd_odds": "+580",
+      "ev_pct": -0.249,
+      "confidence": "C",
+      "notes": "RvL platoon at YS. Lineup spot 9 = fewer PAs. Skip.",
+      "key_stats": [
+        "RvL platoon",
+        "YS RHB pull factor"
+      ],
+      "risks": [
+        "Bottom-of-order PA risk"
+      ],
+      "bet99_odds": "+650",
+      "bet99_status": "estimated"
+    },
+    {
+      "rank": 29,
+      "action": "PASS",
+      "player": "Giancarlo Stanton",
+      "team": "NYY",
+      "bat": "R",
+      "opp_team": "BAL",
+      "opp_pitcher": "Cade Povich",
+      "opp_hand": "L",
+      "park": "Yankee Stadium",
+      "park_hr_factor": 1.12,
+      "lineup_spot": "5-6 (est)",
+      "expected_pa": 4.0,
+      "hitter_barrel_pct": 14.0,
+      "pitcher_barrel_allowed_pct": 9.5,
+      "reverse_split_flag": "NORMAL",
+      "model_p_hr": 0.16,
+      "fair_odds": "+525",
+      "fd_odds": "+360",
+      "ev_pct": -0.264,
+      "confidence": "C+",
+      "notes": "RvL platoon at YS, Stanton 14% barrel%. But FD priced him on his name and YS reputation. Pass at +360.",
+      "key_stats": [
+        "Stanton barrel%: 14%",
+        "RvL platoon at YS"
+      ],
+      "risks": [
+        "Public/park name premium"
+      ],
+      "bet99_odds": "+390",
+      "bet99_status": "estimated"
+    }
+  ],
+  "sources": [
+    {
+      "label": "FanDuel Research — HR Props 5/1",
+      "url": "https://www.fanduel.com/research/mlb-home-run-prop-odds-5-1-2026"
+    },
+    {
+      "label": "CBS Sports — May 1 Albies/Coors pick",
+      "url": "https://www.cbssports.com/betting/news/free-mlb-home-run-picks-may-1-braves-ozzie-albies-facing-ideal-pitcher-in-thin-air-at-coors-field-on-friday/"
+    },
+    {
+      "label": "Yankees vs Orioles preview 5/1",
+      "url": "https://www.fanduel.com/research/yankees-vs-orioles-mlb-odds-prediction-point-spread-over-under-and-betting-trends-for-5-1-2026"
+    },
+    {
+      "label": "ATL @ COL preview 5/1",
+      "url": "https://winnersandwhiners.com/free-picks/mlb/atlanta-braves-vs-colorado-rockies-picks-prediction-odds-and-line-movement-for-friday-may-1-2026"
+    },
+    {
+      "label": "CIN @ PIT preview 5/1",
+      "url": "https://www.bleachernation.com/picks/2026/04/29/pittsburgh-pirates-vs-cincinnati-reds-series-may-1-3-odds-starting-pitchers-predictions/"
+    },
+    {
+      "label": "FantasyPros probable pitchers May 1-7",
+      "url": "https://www.fantasypros.com/mlb/probable-pitchers.php"
+    }
+  ],
+  "sportsbook_note": "FanDuel odds confirmed via web search where available. Bet99 odds are ESTIMATED (Bet99 doesn't expose props via public APIs). Paste Bet99 lines for any pick to upgrade those to confirmed.",
+  "available_sportsbooks": [
+    "fanduel",
+    "bet99"
+  ]
+};
+
+let currentFilter = 'ALL';
+let currentSort = 'ev';
+let selectedBook = 'fanduel'; // 'fanduel' | 'bet99'
+
+const $ = (id) => document.getElementById(id);
+
+// ---------- Book helpers ----------
+const BOOK_LABELS = { fanduel: 'FanDuel', bet99: 'Bet99' };
+
+function getBookOdds(p, book) {
+  if (book === 'bet99') return p.bet99_odds;
+  return p.fd_odds;
+}
+function getBookStatus(p, book) {
+  if (book === 'bet99') return p.bet99_status || 'unknown';
+  return 'confirmed';
+}
+
+// Parse "+300" or "-150" → integer (returns NaN for missing)
+function parseAmerican(s) {
+  if (!s) return NaN;
+  const n = parseInt(String(s).replace('+', ''), 10);
+  return isNaN(n) ? NaN : n;
+}
+// EV given P and American odds string
+function computeEV(p_hr, oddsStr) {
+  const a = parseAmerican(oddsStr);
+  if (isNaN(a) || !p_hr) return null;
+  const payoutPerDollar = a > 0 ? a / 100 : 100 / Math.abs(a);
+  return p_hr * payoutPerDollar - (1 - p_hr);
+}
+// EV against currently-selected book
+function evVsSelected(pick) {
+  const odds = getBookOdds(pick, selectedBook);
+  return computeEV(pick.model_p_hr, odds);
+}
+
+function setBook(newBook) {
+  selectedBook = newBook;
+  // Sync both toggle UIs
+  document.querySelectorAll('.book-btn').forEach(b => {
+    const isActive = b.dataset.book === newBook;
+    b.classList.toggle('active', isActive);
+    b.setAttribute('aria-selected', isActive ? 'true' : 'false');
+  });
+  // Re-render results if visible
+  if (!$('resultsSection').classList.contains('hidden')) {
+    populateStats();
+    render();
+  }
+}
+
+// ---------- Bankroll & Kelly sizing ----------
+const SETTINGS_KEY = 'mlb_hr_settings_v1';
+const DEFAULT_SETTINGS = {
+  bankroll: 1000,
+  unitPct: 0.01,      // 1u = 1% of bankroll
+  kellyFrac: 0.25,    // quarter Kelly
+  maxUnits: 3,        // hard cap per pick
+  minEV: 0.03,        // min EV% to recommend a bet (3%)
+  minConfRank: 6,     // min conf rank — index in conf order list (B+ or better by default)
+};
+let settings = { ...DEFAULT_SETTINGS };
+
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if (raw) settings = { ...DEFAULT_SETTINGS, ...JSON.parse(raw) };
+  } catch (e) { /* ignore */ }
+}
+function saveSettings() {
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch (e) { /* ignore */ }
+}
+
+// Kelly fraction: f* = (b*p - q) / b   where b = decimal_payout - 1
+function kellyFraction(p_hr, oddsStr) {
+  const a = parseAmerican(oddsStr);
+  if (isNaN(a) || !p_hr) return null;
+  const b = a > 0 ? a / 100 : 100 / Math.abs(a);
+  const q = 1 - p_hr;
+  const f = (b * p_hr - q) / b;
+  return f; // can be negative for -EV plays
+}
+
+// Returns {units, dollars, kellyPct, recommend} for a pick
+function recommendUnits(p) {
+  const ev = evVsSelected(p);
+  const oddsStr = getBookOdds(p, selectedBook);
+  const f = kellyFraction(p.model_p_hr, oddsStr);
+  if (ev == null || f == null || ev < settings.minEV) {
+    return { units: 0, dollars: 0, kellyPct: f, recommend: false, reason: ev != null && ev < settings.minEV ? 'EV too low' : 'no edge' };
+  }
+  // Apply fractional Kelly
+  const sized = f * settings.kellyFrac;
+  // Convert to units: sized = % of bankroll. 1u = unitPct of bankroll.
+  // → units = sized / unitPct
+  const rawUnits = sized / settings.unitPct;
+  // Cap and floor
+  const units = Math.min(Math.max(rawUnits, 0), settings.maxUnits);
+  const unitDollars = settings.bankroll * settings.unitPct;
+  return {
+    units: Math.round(units * 4) / 4,  // round to 0.25u increments
+    dollars: Math.round(units * unitDollars * 100) / 100,
+    kellyPct: f,
+    recommend: units >= 0.25,
+  };
+}
+
+// Daily plan: aggregate across all picks recommended for betting
+function dailyPlan() {
+  const picks = PICKS_DATA.picks || [];
+  let totalUnits = 0, totalDollars = 0, expectedProfit = 0, plays = 0;
+  picks.forEach(p => {
+    const rec = recommendUnits(p);
+    if (!rec.recommend) return;
+    plays++;
+    totalUnits += rec.units;
+    totalDollars += rec.dollars;
+    const a = parseAmerican(getBookOdds(p, selectedBook));
+    if (!isNaN(a)) {
+      const payoutPerDollar = a > 0 ? a / 100 : 100 / Math.abs(a);
+      const expProfit = p.model_p_hr * payoutPerDollar * rec.dollars - (1 - p.model_p_hr) * rec.dollars;
+      expectedProfit += expProfit;
+    }
+  });
+  const expectedROI = totalDollars > 0 ? expectedProfit / totalDollars : 0;
+  return { plays, totalUnits: Math.round(totalUnits * 4) / 4, totalDollars: Math.round(totalDollars * 100) / 100, expectedProfit: Math.round(expectedProfit * 100) / 100, expectedROI };
+}
+
+function applySettingsFromUI() {
+  settings.bankroll = Math.max(0, parseFloat($('bankrollInput').value) || DEFAULT_SETTINGS.bankroll);
+  settings.unitPct = parseFloat($('unitPctSelect').value) || DEFAULT_SETTINGS.unitPct;
+  settings.kellyFrac = parseFloat($('kellyFracSelect').value) || DEFAULT_SETTINGS.kellyFrac;
+  settings.maxUnits = parseFloat($('maxUnitsSelect').value) || DEFAULT_SETTINGS.maxUnits;
+  saveSettings();
+  if (!$('resultsSection').classList.contains('hidden')) {
+    populateStats();
+    render();
+  }
+}
+function syncSettingsToUI() {
+  $('bankrollInput').value = settings.bankroll;
+  $('unitPctSelect').value = String(settings.unitPct);
+  $('kellyFracSelect').value = String(settings.kellyFrac);
+  $('maxUnitsSelect').value = String(settings.maxUnits);
+}
+
+// ---------- Date helpers ----------
+function todayISO() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+function todayHumanLabel() {
+  const d = new Date();
+  return d.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+}
+function isStale() {
+  const slateDate = (PICKS_DATA.slate_date || '').trim();
+  return slateDate && slateDate !== todayISO();
+}
+function refreshDateBanner() {
+  $('todayLabel').textContent = todayHumanLabel();
+  $('slateLabel').textContent = PICKS_DATA.slate_label || PICKS_DATA.slate_date || '—';
+  const stale = isStale();
+  const status = $('dataStatus');
+  if (stale) {
+    status.textContent = 'Data stale';
+    status.classList.add('stale');
+    $('staleBanner').classList.remove('hidden');
+    $('staleSlateDate').textContent = PICKS_DATA.slate_date || '—';
+    $('staleToday').textContent = todayISO();
+  } else {
+    status.textContent = 'Data fresh';
+    status.classList.remove('stale');
+    $('staleBanner').classList.add('hidden');
+  }
+}
+
+function init() {
+  refreshDateBanner();
+  loadSettings();
+  syncSettingsToUI();
+  $('generateBtn').addEventListener('click', onGenerate);
+  // Book toggle (works on both hero + toolbar instances)
+  document.querySelectorAll('.book-btn').forEach(b => {
+    b.addEventListener('click', () => setBook(b.dataset.book));
+  });
+  // Settings panel toggle + inputs
+  $('settingsBtn').addEventListener('click', () => {
+    $('settingsPanel').classList.toggle('hidden');
+  });
+  ['bankrollInput', 'unitPctSelect', 'kellyFracSelect', 'maxUnitsSelect'].forEach(id => {
+    $(id).addEventListener('change', applySettingsFromUI);
+    if (id === 'bankrollInput') $(id).addEventListener('input', applySettingsFromUI);
+  });
+  $('sortSelect').addEventListener('change', (e) => { currentSort = e.target.value; render(); });
+  document.querySelectorAll('.chip').forEach(c => {
+    c.addEventListener('click', () => {
+      document.querySelectorAll('.chip').forEach(x => x.classList.remove('active'));
+      c.classList.add('active');
+      currentFilter = c.dataset.filter;
+      render();
+    });
+  });
+  $('modalOverlay').addEventListener('click', (e) => { if (e.target === $('modalOverlay')) closeModal(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+}
+
+const LOADING_MESSAGES = [
+  'Pulling probable pitchers…',
+  'Crunching pitcher splits & barrel rates…',
+  'Comparing hitter vs pitcher hand…',
+  'Adjusting for park HR factor…',
+  'Computing fair odds…',
+  'Comparing to FanDuel lines…',
+  'Ranking +EV plays…'
+];
+
+async function onGenerate() {
+  $('heroSection').classList.add('hidden');
+  $('resultsSection').classList.add('hidden');
+  $('loadingSection').classList.remove('hidden');
+  $('generateBtn').disabled = true;
+
+  // Animated loading sequence
+  for (let i = 0; i < LOADING_MESSAGES.length; i++) {
+    $('loadingMsg').textContent = LOADING_MESSAGES[i];
+    await new Promise(r => setTimeout(r, 380));
+  }
+
+  // ALWAYS try to fetch the latest picks.json. When hosted (Netlify), this hits
+  // the cron-updated file and auto-refreshes daily. Cache-busted to bypass CDN.
+  // When opened as local file:// (no server), fetch fails CORS → embedded data
+  // is the fallback, and the stale-data banner warns the user.
+  try {
+    const cacheBust = `?t=${Date.now()}`;
+    const resp = await fetch('picks.json' + cacheBust, { cache: 'no-store' });
+    if (resp.ok) {
+      const data = await resp.json();
+      // REPLACE (not just merge) so removed picks disappear and new ones show up
+      Object.keys(PICKS_DATA).forEach(k => delete PICKS_DATA[k]);
+      Object.assign(PICKS_DATA, data);
+    }
+  } catch (e) { /* embedded data is canonical fallback for local-file mode */ }
+
+  $('loadingSection').classList.add('hidden');
+  $('resultsSection').classList.remove('hidden');
+  $('generateBtn').disabled = false;
+
+  // Re-evaluate date staleness after data refresh
+  refreshDateBanner();
+
+  populateStats();
+  populateSources();
+  $('dataConfidence').textContent = PICKS_DATA.data_confidence || '';
+  render();
+}
+
+function populateStats() {
+  const picks = PICKS_DATA.picks || [];
+  // Book-aware: count plays that are +EV vs the SELECTED book at >= +5%
+  const liveBets = picks.filter(p => {
+    const ev = evVsSelected(p);
+    return ev != null && ev >= 0.05;
+  });
+  const monitor = picks.filter(p => {
+    const ev = evVsSelected(p);
+    return ev != null && ev >= -0.05 && ev < 0.05;
+  });
+  const totalEV = liveBets.reduce((s, p) => s + (evVsSelected(p) || 0), 0);
+  let topEV = -Infinity, topPlayer = '—';
+  picks.forEach(p => {
+    const ev = evVsSelected(p);
+    if (ev != null && ev > topEV) { topEV = ev; topPlayer = p.player; }
+  });
+
+  $('cnt-ALL').textContent = picks.length;
+  $('cnt-BET').textContent = picks.filter(p => p.action === 'BET').length;
+  $('cnt-MONITOR').textContent = picks.filter(p => p.action === 'MONITOR').length;
+  $('cnt-PASS').textContent = picks.filter(p => p.action === 'PASS').length;
+
+  const bookLabel = BOOK_LABELS[selectedBook];
+  const plan = dailyPlan();
+  const exposurePct = settings.bankroll > 0 ? (plan.totalDollars / settings.bankroll * 100) : 0;
+
+  $('statsRow').innerHTML = `
+    <div class="stat-card green">
+      <div class="label">Today's plays vs ${bookLabel}</div>
+      <div class="value">${plan.plays}</div>
+      <div class="sub">${plan.totalUnits}u total → $${plan.totalDollars.toFixed(2)}</div>
+    </div>
+    <div class="stat-card accent">
+      <div class="label">Expected daily ROI</div>
+      <div class="value" style="color:${plan.expectedROI > 0 ? 'var(--green)' : 'var(--text-dim)'};">${plan.totalDollars > 0 ? (plan.expectedROI > 0 ? '+' : '') + (plan.expectedROI*100).toFixed(1)+'%' : '—'}</div>
+      <div class="sub">+$${plan.expectedProfit.toFixed(2)} expected profit</div>
+    </div>
+    <div class="stat-card yellow">
+      <div class="label">Bankroll exposure</div>
+      <div class="value">${exposurePct.toFixed(1)}%</div>
+      <div class="sub">$${plan.totalDollars.toFixed(2)} of $${settings.bankroll.toFixed(0)}</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Top edge</div>
+      <div class="value">${topEV === -Infinity ? '—' : (topEV*100).toFixed(0)+'%'}</div>
+      <div class="sub">${topPlayer}</div>
+    </div>
+  `;
+}
+
+function populateSources() {
+  const list = $('sourcesList');
+  list.innerHTML = '';
+  (PICKS_DATA.sources || []).forEach(s => {
+    const a = document.createElement('a');
+    a.href = s.url; a.textContent = s.label;
+    a.target = '_blank'; a.rel = 'noopener';
+    list.appendChild(a);
+  });
+}
+
+function confTier(c) {
+  if (!c) return '';
+  const ch = c.charAt(0).toUpperCase();
+  if (ch === 'A') return 'A';
+  if (ch === 'B') return 'B';
+  if (ch === 'C') return 'C';
+  return 'D';
+}
+
+function renderCard(p) {
+  // Compute EV against currently-selected book (live)
+  const oddsStr = getBookOdds(p, selectedBook);
+  const ev = evVsSelected(p);
+  const evDisplay = ev == null ? '—' : ((ev > 0 ? '+' : '') + (ev * 100).toFixed(1) + '%');
+  const evClass = ev == null ? 'zero' : (ev > 0.001 ? 'pos' : ev < -0.001 ? 'neg' : 'zero');
+
+  const conf = confTier(p.confidence);
+  const actionBadge = p.action === 'BET' ? 'badge-bet' : p.action === 'MONITOR' ? 'badge-monitor' : 'badge-pass';
+  const reverseBadge = p.reverse_split_flag === 'FLAGGED'
+    ? '<span class="rev-flag" title="Reverse splits — pitcher hits same-hand worse than opposite. Naive platoon flipped.">⇄ Reverse split</span>'
+    : '';
+  const hBarrel = p.hitter_barrel_pct;
+  const pBarrel = p.pitcher_barrel_allowed_pct;
+  const barrelLine = (hBarrel != null && pBarrel != null)
+    ? `<div class="barrel-row">
+         <span class="bk"><span class="dot ${hBarrel>=14?'hot':hBarrel>=11?'warm':''}"></span>Hitter brl ${hBarrel.toFixed(1)}%</span>
+         <span class="bk"><span class="dot ${pBarrel>=9?'hot':pBarrel>=8?'warm':''}"></span>SP brl allow ${pBarrel.toFixed(1)}%</span>
+       </div>`
+    : '';
+
+  // Book odds row — show selected book label + estimated badge if Bet99 placeholder
+  const status = getBookStatus(p, selectedBook);
+  const estimatedBadge = (selectedBook === 'bet99' && status === 'estimated')
+    ? '<span class="est-badge" title="Bet99 odds estimated — paste actual line for confirmed EV">EST</span>'
+    : '';
+  const oddsCellLabel = `Fair / ${BOOK_LABELS[selectedBook]}`;
+  const oddsDisplay = oddsStr || '—';
+
+  // Kelly-based unit recommendation
+  const rec = recommendUnits(p);
+  const unitsRow = rec.recommend
+    ? `<div class="units-row">
+         <span class="units-pill">${rec.units}u</span>
+         <span class="units-meta">→ <span class="units-amount">$${rec.dollars.toFixed(2)}</span> at ${BOOK_LABELS[selectedBook]} ${oddsDisplay}</span>
+       </div>`
+    : `<div class="units-row skip">
+         <span class="units-pill skip">SKIP</span>
+         <span class="units-meta">${ev != null && ev < settings.minEV ? 'EV below ' + (settings.minEV*100).toFixed(0) + '% threshold' : 'no edge at this line'}</span>
+       </div>`;
+
+  return `
+    <div class="pick-card" data-action="${p.action}" onclick='openModal(${p.rank})'>
+      <div class="card-top">
+        <div style="display:flex; gap:10px; align-items:center;">
+          <div class="card-rank">${p.rank}</div>
+          <div>
+            <div class="card-player">${p.player}</div>
+            <div class="card-team-row">
+              <span class="pill">${p.team}</span>
+              <span class="pill hand">Bats ${p.bat}</span>
+              <span style="color: var(--text-dim);">vs ${p.opp_team}</span>
+            </div>
+          </div>
+        </div>
+        <span class="card-action-badge ${actionBadge}">${p.action}</span>
+      </div>
+      <div class="card-matchup">
+        <div class="label">Matchup ${reverseBadge}</div>
+        <div><span class="pitcher">${p.opp_pitcher}</span> · ${p.opp_hand}HP · ${p.park}</div>
+      </div>
+      ${barrelLine}
+      <div class="odds-row">
+        <div class="odds-cell">
+          <div class="l">Model P</div>
+          <div class="v">${(p.model_p_hr * 100).toFixed(0)}%</div>
+        </div>
+        <div class="odds-cell">
+          <div class="l">${oddsCellLabel}${estimatedBadge}</div>
+          <div class="v" style="font-size: 13px;">${p.fair_odds} / <span style="color:var(--accent-2)">${oddsDisplay}</span></div>
+        </div>
+        <div class="odds-cell ev">
+          <div class="l">EV</div>
+          <div class="v ${evClass}">${evDisplay}</div>
+        </div>
+      </div>
+      ${unitsRow}
+      <div class="card-notes">${p.notes}</div>
+      <div class="card-meta-row">
+        <span>Lineup ${p.lineup_spot} · ${p.expected_pa} PA</span>
+        <span class="conf-badge conf-${conf}">${p.confidence}</span>
+      </div>
+    </div>
+  `;
+}
+
+function getSortFn(key) {
+  switch (key) {
+    case 'ev': return (a,b) => (evVsSelected(b) ?? -Infinity) - (evVsSelected(a) ?? -Infinity);
+    case 'units': return (a,b) => recommendUnits(b).units - recommendUnits(a).units;
+    case 'prob': return (a,b) => b.model_p_hr - a.model_p_hr;
+    case 'conf': {
+      const order = ['A','A-','B+','B','B-','C+','C','C-','D+','D','D-','F'];
+      return (a,b) => (order.indexOf(a.confidence) ?? 99) - (order.indexOf(b.confidence) ?? 99);
+    }
+    case 'rank': return (a,b) => a.rank - b.rank;
+    default: return (a,b) => (evVsSelected(b) ?? -Infinity) - (evVsSelected(a) ?? -Infinity);
+  }
+}
+
+function render() {
+  const picks = PICKS_DATA.picks || [];
+  let filtered = picks;
+  if (currentFilter !== 'ALL') filtered = picks.filter(p => p.action === currentFilter);
+  filtered = [...filtered].sort(getSortFn(currentSort));
+
+  const grid = $('picksGrid');
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="empty-msg">No picks match this filter.</div>`;
+    return;
+  }
+  grid.innerHTML = filtered.map(renderCard).join('');
+}
+
+function openModal(rank) {
+  const p = (PICKS_DATA.picks || []).find(x => x.rank === rank);
+  if (!p) return;
+  $('modalTitle').textContent = p.player;
+  $('modalSub').textContent = `${p.team} (Bats ${p.bat}) vs ${p.opp_pitcher} · ${p.opp_hand}HP · ${p.park}`;
+  const reverseRow = p.reverse_split_flag === 'FLAGGED'
+    ? `<div class="modal-section reverse-banner">
+         <h4>⇄ Reverse split flagged</h4>
+         <p>Pitcher hits same-handed batters worse than opposite-hand career. Naive L/R platoon assumption is reversed in the model.</p>
+       </div>`
+    : '';
+  const hb = (p.hitter_barrel_pct ?? null);
+  const pb = (p.pitcher_barrel_allowed_pct ?? null);
+
+  // Both books for side-by-side comparison
+  const fdEV = computeEV(p.model_p_hr, p.fd_odds);
+  const b99EV = computeEV(p.model_p_hr, p.bet99_odds);
+  const fmtEV = ev => ev == null ? '—' : ((ev > 0 ? '+' : '') + (ev * 100).toFixed(1) + '%');
+  const evColor = ev => ev == null ? 'var(--text-dim)' : ev > 0.001 ? 'var(--green)' : ev < -0.001 ? '#ff7878' : 'var(--yellow)';
+  const b99EstFlag = p.bet99_status === 'estimated'
+    ? '<span class="est-badge">EST</span>'
+    : '';
+
+  $('modalBody').innerHTML = `
+    <div class="modal-section">
+      <h4>Verdict</h4>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+        <span class="card-action-badge badge-${p.action.toLowerCase() === 'bet' ? 'bet' : p.action.toLowerCase() === 'monitor' ? 'monitor' : 'pass'}">${p.action}</span>
+        <span class="conf-badge conf-${confTier(p.confidence)}">Confidence ${p.confidence}</span>
+        <span style="color: var(--text-2); font-size: 13px;">Fair ${p.fair_odds}</span>
+      </div>
+    </div>
+
+    <div class="modal-section">
+      <h4>Sportsbook comparison</h4>
+      <div class="modal-stats-grid">
+        <div class="modal-stat" style="${selectedBook === 'fanduel' ? 'border-left: 2px solid var(--accent);' : ''}">
+          <div class="l"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#1493ff;margin-right:6px;vertical-align:middle;"></span>FanDuel</div>
+          <div class="v" style="display:flex; gap:10px; align-items:baseline;">
+            <span style="font-size:15px; color: var(--accent-2);">${p.fd_odds || '—'}</span>
+            <span style="font-size:13px; color:${evColor(fdEV)};">${fmtEV(fdEV)}</span>
+          </div>
+        </div>
+        <div class="modal-stat" style="${selectedBook === 'bet99' ? 'border-left: 2px solid var(--accent);' : ''}">
+          <div class="l"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#2ecc71;margin-right:6px;vertical-align:middle;"></span>Bet99 ${b99EstFlag}</div>
+          <div class="v" style="display:flex; gap:10px; align-items:baseline;">
+            <span style="font-size:15px; color: var(--accent-2);">${p.bet99_odds || '—'}</span>
+            <span style="font-size:13px; color:${evColor(b99EV)};">${fmtEV(b99EV)}</span>
+          </div>
+        </div>
+      </div>
+      ${p.bet99_status === 'estimated' ? '<p style="margin-top:8px;font-size:12px;color:var(--text-dim);">Bet99 line is estimated (~8-12% longer than FanDuel based on typical price differences). Paste actual Bet99 line for confirmed EV.</p>' : ''}
+    </div>
+
+    <div class="modal-section">
+      <h4>Recommended bet size (vs ${BOOK_LABELS[selectedBook]})</h4>
+      ${(() => {
+        const rec = recommendUnits(p);
+        if (!rec.recommend) {
+          return `<p>SKIP — ${rec.reason || 'no edge at current line'}. Quarter-Kelly recommends 0u at this EV/price.</p>`;
+        }
+        const a = parseAmerican(getBookOdds(p, selectedBook));
+        const payoutPerDollar = a > 0 ? a / 100 : 100 / Math.abs(a);
+        const expWin = rec.dollars * payoutPerDollar;
+        const expProfit = p.model_p_hr * payoutPerDollar * rec.dollars - (1 - p.model_p_hr) * rec.dollars;
+        return `<div class="modal-stats-grid">
+          <div class="modal-stat"><div class="l">Stake</div><div class="v"><span style="color:var(--green);">${rec.units}u</span> → $${rec.dollars.toFixed(2)}</div></div>
+          <div class="modal-stat"><div class="l">Kelly fraction</div><div class="v">${(rec.kellyPct*100).toFixed(1)}% × ${settings.kellyFrac}</div></div>
+          <div class="modal-stat"><div class="l">If wins</div><div class="v" style="color:var(--green);">+$${expWin.toFixed(2)}</div></div>
+          <div class="modal-stat"><div class="l">Expected profit</div><div class="v" style="color:${expProfit>0?'var(--green)':'#ff7878'};">${expProfit>0?'+':''}$${expProfit.toFixed(2)}</div></div>
+        </div>
+        <p style="margin-top:8px;font-size:12px;color:var(--text-dim);">Sizing: ${(settings.kellyFrac*100).toFixed(0)}% Kelly · 1u = $${(settings.bankroll*settings.unitPct).toFixed(2)} (${(settings.unitPct*100).toFixed(1)}% of $${settings.bankroll}) · capped at ${settings.maxUnits}u/play</p>`;
+      })()}
+    </div>
+    ${reverseRow}
+    <div class="modal-section">
+      <h4>Why this is ${p.action.toLowerCase() === 'bet' ? '+EV' : p.action.toLowerCase()}</h4>
+      <p>${p.notes}</p>
+    </div>
+    <div class="modal-section">
+      <h4>Key stats</h4>
+      <ul>${(p.key_stats || []).map(s => `<li>${s}</li>`).join('')}</ul>
+    </div>
+    <div class="modal-section risks">
+      <h4>Risks</h4>
+      <ul>${(p.risks || []).map(s => `<li>${s}</li>`).join('')}</ul>
+    </div>
+    <div class="modal-section">
+      <h4>Barrel-quality clash</h4>
+      <div class="modal-stats-grid">
+        <div class="modal-stat"><div class="l">Hitter barrel %</div><div class="v">${hb != null ? hb.toFixed(1) + '%' : '—'}</div></div>
+        <div class="modal-stat"><div class="l">SP barrel% allowed</div><div class="v">${pb != null ? pb.toFixed(1) + '%' : '—'}</div></div>
+      </div>
+      <p style="margin-top: 8px; font-size: 12px; color: var(--text-dim);">League-avg barrel%: hitter ~7.5%, SP allowed ~7.0%. Above 11% (hitter) or 9% (SP allowed) = HR-friendly clash.</p>
+    </div>
+    <div class="modal-section">
+      <h4>Inputs</h4>
+      <div class="modal-stats-grid">
+        <div class="modal-stat"><div class="l">Model P(HR)</div><div class="v">${(p.model_p_hr*100).toFixed(1)}%</div></div>
+        <div class="modal-stat"><div class="l">Park HR factor</div><div class="v">${p.park_hr_factor}×</div></div>
+        <div class="modal-stat"><div class="l">Lineup spot</div><div class="v">${p.lineup_spot}</div></div>
+        <div class="modal-stat"><div class="l">Expected PA</div><div class="v">${p.expected_pa}</div></div>
+      </div>
+    </div>
+  `;
+  $('modalOverlay').classList.add('active');
+}
+
+function closeModal() { $('modalOverlay').classList.remove('active'); }
+
+init();
+</script>
+
+</body>
+</html>
