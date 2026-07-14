@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-07-13T15:17:47.855628Z",
-  "slate_date": "2026-07-13",
-  "slate_label": "Monday, July 13, 2026 (auto-refreshed)",
-  "games_in_slate": 0,
-  "games_analyzed": 0,
+  "generated_at": "2026-07-14T14:20:30.548734Z",
+  "slate_date": "2026-07-14",
+  "slate_label": "Tuesday, July 14, 2026 (auto-refreshed)",
+  "games_in_slate": 1,
+  "games_analyzed": 1,
   "data_confidence": "Auto-refreshed: rosters + recent stats verified from MLB Stats API. FanDuel odds scrape failed — paste lines manually for accurate EV.",
   "model_version": "2.0-auto",
   "tier_thresholds": {
@@ -24,7 +24,7 @@
     },
     {
       "label": "FanDuel Research HR Props (odds)",
-      "url": "https://www.fanduel.com/research/mlb-home-run-prop-odds-2026-07-13"
+      "url": "https://www.fanduel.com/research/mlb-home-run-prop-odds-2026-07-14"
     }
   ]
 }
