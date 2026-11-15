@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-11-14T18:20:10.450696Z",
-  "slate_date": "2026-11-14",
-  "slate_label": "Saturday, November 14, 2026 (auto-refreshed)",
+  "generated_at": "2026-11-15T18:59:14.785527Z",
+  "slate_date": "2026-11-15",
+  "slate_label": "Sunday, November 15, 2026 (auto-refreshed)",
   "games_in_slate": 0,
   "games_analyzed": 0,
   "data_confidence": "Auto-refreshed: rosters + recent stats verified from MLB Stats API. FanDuel odds scrape failed — paste lines manually for accurate EV.",
@@ -24,7 +24,7 @@
     },
     {
       "label": "FanDuel Research HR Props (odds)",
-      "url": "https://www.fanduel.com/research/mlb-home-run-prop-odds-2026-11-14"
+      "url": "https://www.fanduel.com/research/mlb-home-run-prop-odds-2026-11-15"
     }
   ]
 }
